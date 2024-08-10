@@ -1,6 +1,7 @@
 import Address from "../value-object/address";
+import CustomerInterface from "./customer.interface";
 
-export default class Customer {
+export default class Customer implements CustomerInterface {
   private _id: string;
   private _name: string = "";
   private _address!: Address;
@@ -25,7 +26,7 @@ export default class Customer {
     return this._rewardPoints
   }
 
-  get Address() {
+  get Address(): Address {
     return this._address;
   }
 
