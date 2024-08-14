@@ -21,7 +21,7 @@ export default class OrderRepository implements OrderRepositoryInterface {
       },
       {
         include: [{ model: OrderItemModel }],
-      }  
+      }
     );
   }
 
@@ -32,15 +32,17 @@ export default class OrderRepository implements OrderRepositoryInterface {
       },
     });
 
-    await OrderItemModel.bulkCreate(entity.items.map(item => ({
-      id: item.id,
-      name: item.name,
-      price: item.price,
-      product_id: item.productId,
-      quantity: item.quantity,
-      order_id: entity.id,
-    })));
-    
+    await OrderItemModel.bulkCreate(
+      entity.items.map((item) => ({
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        product_id: item.productId,
+        quantity: item.quantity,
+        order_id: entity.id,
+      }))
+    );
+
     await OrderModel.update(
       {
         customer_id: entity.customerId,
@@ -49,8 +51,8 @@ export default class OrderRepository implements OrderRepositoryInterface {
       {
         where: {
           id: entity.id,
-        }, 
-      },
+        },
+      }
     );
   }
 
@@ -82,8 +84,29 @@ export default class OrderRepository implements OrderRepositoryInterface {
 
     return order;
   }
+
+  async findAll(): Promise<Order[]> {
+    let orderModels;
+    try {
+      orderModels = await OrderModel.findAll({ include: ["items"] });
+    } catch (error) {
+      throw new Error("Error fetching orders");
+    }
   
-  findAll(): Promise<Order[]> {
-    throw new Error("Method not implemented.");
+    const orders = orderModels.map((orderModel: any) => {
+      const orderItems: OrderItem[] = orderModel.items.map((item: any) => {
+        return new OrderItem(
+          item.id,
+          item.name,
+          item.price,
+          item.product_id,
+          item.quantity
+        );
+      });
+  
+      return new Order(orderModel.id, orderModel.customer_id, orderItems);
+    });
+  
+    return orders;
   }
 }
